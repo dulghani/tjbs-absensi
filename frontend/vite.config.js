@@ -1,0 +1,23 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    allowedHosts: ['aside-self-uncouth.ngrok-free.dev'],
+    proxy: {
+      // Semua request /api → backend Laravel
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      // Semua request /storage → backend Laravel (logo, file upload, dll)
+      '/storage': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+})
