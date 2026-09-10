@@ -55,6 +55,7 @@ class LeaveController extends Controller
             }],
             'reason'      => 'required|string|max:500',
             'notes'       => 'nullable|string|max:1000',
+            'is_paid'     => 'boolean',
         ]);
 
         // Normalisasi actual_time ke H:i
