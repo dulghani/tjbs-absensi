@@ -40,5 +40,5 @@ jobs:
         run: |
           curl -f -X POST https://api.tjbs.co.id/deploy-webhook.php \
             -H "X-Deploy-Token: ${{ secrets.DEPLOY_SECRET }}" \
-            --max-time 120 \
+            --max-time 300 \
             --retry 2
