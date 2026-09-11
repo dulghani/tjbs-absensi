@@ -31,6 +31,7 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
+          git pull --rebase origin main
           git add -f frontend/dist/
           git diff --staged --quiet || git commit -m "chore: build frontend [skip ci]"
           git push origin main
