@@ -6,31 +6,18 @@ on:
 
 jobs:
   deploy-backend:
-    name: Deploy Backend (Laravel)
+    name: Deploy Backend (via Webhook)
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy ke Hostinger via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            set -e
-            cd ~/domains/tjbs.co.id/laravel-backend
-            git pull origin main
-            cd backend
-            php composer.phar install --no-dev --optimize-autoloader --no-interaction
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan optimize
-            chmod -R 775 storage bootstrap/cache
-            echo "Backend selesai!"
+      - name: Trigger webhook di server
+        run: |
+          curl -f -X POST https://api.tjbs.co.id/deploy-webhook.php \
+            -H "X-Deploy-Token: ${{ secrets.DEPLOY_SECRET }}" \
+            --max-time 120 \
+            --retry 2
 
   deploy-frontend:
-    name: Build & Deploy Frontend (React)
+    name: Build & Deploy Frontend (via FTP)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout kode
@@ -39,26 +26,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          node-version: '22'
 
-      - name: Install dependencies
-        run: cd frontend && npm ci
-
-      - name: Build React
-        run: cd frontend && npm run build
+      - name: Install & Build React
+        run: |
+          cd frontend
+          npm ci
+          npm run build
         env:
           VITE_API_URL: https://api.tjbs.co.id/api
 
-      - name: Upload ke server
-        uses: appleboy/scp-action@v0.1.7
+      - name: Upload ke server via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: ${{ secrets.SSH_PORT }}
-          source: "frontend/dist/*"
-          target: "~/domains/tjbs.co.id/public_html/os/"
-          strip_components: 2
-          rm: true
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: frontend/dist/
+          server-dir: /domains/tjbs.co.id/public_html/os/
