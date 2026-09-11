@@ -1,0 +1,25 @@
+# ─── Backend Laravel ───────────────────────────────────────────────
+backend/vendor/
+backend/.env
+backend/.env.production
+backend/storage/logs/*.log
+backend/storage/framework/cache/data/
+backend/storage/framework/sessions/
+backend/storage/framework/views/
+backend/bootstrap/cache/*.php
+backend/composer.lock
+backend/create-admin.php
+backend/setup-production.sh
+
+# ─── Frontend React ────────────────────────────────────────────────
+frontend/node_modules/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# ─── OS / Editor ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

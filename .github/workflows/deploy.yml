@@ -5,23 +5,14 @@ on:
     branches: [main]
 
 jobs:
-  deploy-backend:
-    name: Deploy Backend (via Webhook)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger webhook di server
-        run: |
-          curl -f -X POST https://api.tjbs.co.id/deploy-webhook.php \
-            -H "X-Deploy-Token: ${{ secrets.DEPLOY_SECRET }}" \
-            --max-time 120 \
-            --retry 2
-
-  deploy-frontend:
-    name: Build & Deploy Frontend (via FTP)
+  build-and-deploy:
+    name: Build Frontend & Trigger Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout kode
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,11 +27,17 @@ jobs:
         env:
           VITE_API_URL: https://api.tjbs.co.id/api
 
-      - name: Upload ke server via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: frontend/dist/
-          server-dir: /domains/tjbs.co.id/public_html/os/
+      - name: Commit dist ke repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -f frontend/dist/
+          git diff --staged --quiet || git commit -m "chore: build frontend [skip ci]"
+          git push origin main
+
+      - name: Trigger webhook deploy
+        run: |
+          curl -f -X POST https://api.tjbs.co.id/deploy-webhook.php \
+            -H "X-Deploy-Token: ${{ secrets.DEPLOY_SECRET }}" \
+            --max-time 120 \
+            --retry 2
