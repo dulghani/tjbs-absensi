@@ -62,4 +62,3 @@ jobs:
           target: "~/domains/tjbs.co.id/public_html/os/"
           strip_components: 2
           rm: true
-EOF
